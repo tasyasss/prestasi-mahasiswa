@@ -1,0 +1,8 @@
+{
+    "php.stubs": [
+        "mysql-xdevapi",
+        "pdo-mysql",
+        "pgsql",
+        "*"
+    ]
+}

@@ -8,6 +8,7 @@ class AuthController
     public function index()
     {
         // Tampilkan halaman login sebagai halaman default
+        $judul = 'Login';   
         include '../app/views/template/header.php';
         include '../app/views/auth/login.php';
         include '../app/views/template/footer.php';
@@ -23,12 +24,11 @@ class AuthController
                 session_start();
                 $_SESSION['user'] = $user['username'];
                 $_SESSION['role'] = $user['role_name']; // Menyimpan role di session
-
                 // Redirect berdasarkan role
                 if ($_SESSION['role'] === 'Admin') {
                     header('Location: ' . BASE_URL . 'admin/dashboard'); // Arahkan ke halaman dashboard admin
                 } elseif ($_SESSION['role'] === 'Mahasiswa') {
-                    header('Location: ' . BASE_URL . 'user/dashboard'); // Arahkan ke halaman dashboard mahasiswa
+                    header('Location: ' . BASE_URL . 'mahasiswa/dashboard'); // Arahkan ke halaman dashboard mahasiswa
                 } else {
                     echo "Role tidak valid.";
                 }

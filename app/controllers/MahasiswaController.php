@@ -2,14 +2,14 @@
 
 require_once '../app/models/UserModel.php'; // Memuat model
 
-class AdminController extends Controller
+class MahasiswaController extends Controller
 {
     public function dashboard()
     {
         // Tampilkan halaman admin sebagai halaman default
-        $judul = 'Admin';
+        $judul = 'Mahasiswa';
         include '../app/views/template/header.php';
-        include '../app/views/admin/dashboard.php';
+        include '../app/views/mahasiswa/dashboard.php';
         include '../app/views/template/footer.php';
     }
 }

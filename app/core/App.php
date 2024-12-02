@@ -12,17 +12,23 @@ class App
         session_start();
         $url = $this->parseUrl();
 
-        // Cek apakah ada elemen di dalam URL, jika tidak set controller dan method default
-        if (!empty($url) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . '.php')) {
-            $this->controller = ucfirst($url[0]); // Pastikan nama controller dengan huruf besar pertama
-            unset($url[0]);
-        } else {
-            $this->controller = 'AuthController'; // Default controller
+        // Cek apakah ada elemen di dalam URL, jika ada, tentukan controller dan method
+        if (!empty($url)) {
+            // Cek apakah controller yang diminta ada
+            $controllerFile = __DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php';
+            if (file_exists($controllerFile)) {
+                $this->controller = ucfirst($url[0]) . 'Controller'; // Menambahkan 'Controller' pada nama class
+                unset($url[0]);
+            } else {
+                $this->controller = 'AuthController'; // Default controller
+            }
         }
+
+        // Memuat controller yang dipilih
         require_once __DIR__ . '/../controllers/' . $this->controller . '.php';
         $controllerObj = new $this->controller();
 
-        // Cek apakah method yang dipanggil ada di dalam controller
+        // Cek apakah method yang diminta ada di dalam controller
         if (isset($url[1]) && method_exists($controllerObj, $url[1])) {
             $this->method = $url[1];
             unset($url[1]);

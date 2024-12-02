@@ -27,5 +27,5 @@ $conn = $db->connect();
 if ($conn === false) {
     die(print_r(sqlsrv_errors(), true)); // Debug jika terjadi error
 } else {
-    echo "Koneksi Berhasil";
+    // echo "Koneksi Berhasil";
 }

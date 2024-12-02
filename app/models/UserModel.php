@@ -1,28 +1,72 @@
 <?php
 // app/models/UserModel.php
 
+require_once '../config/Database.php'; // Memuat file Database.php
+
 class UserModel
 {
-    // Fungsi untuk mencari user berdasarkan username
-    public function getUserByUsername($username)
+    private $db;
+
+    public function __construct()
     {
-        global $conn; // Menggunakan koneksi dari config/database.php
+        // Membuat koneksi ke database
+        $this->db = (new Database())->connect();
+    }
 
-        // Query untuk mendapatkan data user berdasarkan username
-        $sql = "SELECT u.username, u.password, u.role_id, r.role_name
-                FROM users u
-                INNER JOIN roles r ON u.role_id = r.role_id
-                WHERE u.username = ?";
+    // Fungsi untuk login dan mengambil data pengguna berdasarkan username
+    public function login($username, $password)
+    {
+        // Menyiapkan query SQL untuk mengambil data user
+        $query = "
+            SELECT u.username, u.password, r.role_name 
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.username = ?";  // Menggunakan parameterized query untuk menghindari SQL Injection
 
-        $params = array($username);
-        $stmt = sqlsrv_query($conn, $sql, $params);
+        // Menyiapkan dan menjalankan query
+        $stmt = sqlsrv_prepare($this->db, $query, [$username]);
+        if ($stmt === false) {
+            die(print_r(sqlsrv_errors(), true)); // Debug jika terjadi error pada query
+        }
+
+        // Menjalankan query
+        if (sqlsrv_execute($stmt) === false) {
+            die(print_r(sqlsrv_errors(), true)); // Debug jika terjadi error saat eksekusi
+        }
+
+        // Mengambil hasil query
+        $user = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+
+        // Verifikasi password
+        if ($user && password_verify($password, $user['password'])) {
+            return $user; // Kembalikan data pengguna dan role-nya
+        }
+
+        return null; // Pengguna tidak ditemukan atau password salah
+    }
+
+    public function register($username, $hashedPassword, $role_id)
+    {
+        $query = "INSERT INTO users (username, password, role_id) VALUES (?, ?, ?)";
+        $stmt = sqlsrv_prepare($this->db, $query, [$username, $hashedPassword, $role_id]);
 
         if ($stmt === false) {
             die(print_r(sqlsrv_errors(), true));
         }
 
-        $user = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return sqlsrv_execute($stmt); // Kembalikan true jika berhasil
+    }
 
-        return $user ? $user : null; // Mengembalikan data user jika ditemukan, jika tidak null
+    public function isUsernameExists($username)
+    {
+        $query = "SELECT username FROM users WHERE username = ?";
+        $stmt = sqlsrv_prepare($this->db, $query, [$username]);
+
+        if ($stmt === false) {
+            die(print_r(sqlsrv_errors(), true));
+        }
+
+        sqlsrv_execute($stmt);
+        return sqlsrv_fetch_array($stmt) !== false; // Kembalikan true jika username ada
     }
 }

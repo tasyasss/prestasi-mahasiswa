@@ -1,37 +1,5 @@
-# # # Aktifkan penulisan ulang URL
-RewriteEngine On
-
-# # # Atur Base URL jika aplikasi kamu diakses dalam subdirektori
-RewriteBase /prestasi-mahasiswa/
-
-# # # Jika ada permintaan ke folder atau file yang tidak ada, arahkan ke index.php
-# RewriteCond %{REQUEST_FILENAME} !-f
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteRule ^(.*)$ public/index.php [QSA,L]
-
-# # # Mengarahkan permintaan ke file index.php di dalam folder public
-RewriteRule ^$ public/index.php [QSA,L]
-RewriteRule ^index\.php$ public/index.php [QSA,L]
-
-# # # Cegah akses langsung ke file-file yang ada di dalam folder app, config, dan core
-# RewriteRule ^app/ - [F,L]
-# RewriteRule ^config/ - [F,L]
-# RewriteRule ^core/ - [F,L]
-
-# # # Cegah akses langsung ke file konfigurasi dan database
-RewriteRule ^config/database\.php - [F,L]
-RewriteRule ^config/config\.php - [F,L]
-
-# # # Atur pemetaan URL ke controller yang tepat (contoh: /user/dashboard)
-# RewriteRule ^user/dashboard$ public/index.php?controller=UserController&action=dashboard [QSA,L]
-# RewriteRule ^admin/dashboard$ public/index.php?controller=AdminController&action=dashboard [QSA,L]
-# RewriteRule ^auth/login$ public/index.php?controller=AuthController&action=login [QSA,L]
-# RewriteRule ^auth/logout$ public/index.php?controller=AuthController&action=logout [QSA,L]
-
-# # # Cegah akses ke folder assets secara langsung
-RewriteRule ^public/assets/ - [F,L]
-
-
-# # # Atur error pages (opsional)
-# # # ErrorDocument 404 /public/assets/404.html
-# # # ErrorDocument 500 /public/assets/500.html
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ public/ [L]
+    RewriteRule (.*) public/$1 [L]
+</IfModule>

@@ -1,47 +1,28 @@
 <?php
+// app/models/UserModel.php
+
 class UserModel
 {
-    private $db;
-
-    public function __construct()
+    // Fungsi untuk mencari user berdasarkan username
+    public function getUserByUsername($username)
     {
-        $this->db = (new Database())->connect();  // Koneksi database
-    }
+        global $conn; // Menggunakan koneksi dari config/database.php
 
-    // Fungsi untuk login dan ambil role berdasarkan username
-    public function login($username, $password)
-    {
-        $query = "
-            SELECT u.id, u.username, u.password, r.role_name 
-            FROM users u
-            JOIN roles r ON u.role_id = r.id
-            WHERE u.username = ?"; // Menggunakan parameterized query
+        // Query untuk mendapatkan data user berdasarkan username
+        $sql = "SELECT u.username, u.password, u.role_id, r.role_name
+                FROM users u
+                INNER JOIN roles r ON u.role_id = r.role_id
+                WHERE u.username = ?";
 
-        // Menyiapkan query
-        $stmt = sqlsrv_prepare($this->db, $query, [$username]);
+        $params = array($username);
+        $stmt = sqlsrv_query($conn, $sql, $params);
 
         if ($stmt === false) {
-            die(print_r(sqlsrv_errors(), true)); // Debug jika query gagal
+            die(print_r(sqlsrv_errors(), true));
         }
 
-        // Menjalankan query
-        if (sqlsrv_execute($stmt) === false) {
-            die(print_r(sqlsrv_errors(), true)); // Debug jika eksekusi gagal
-        }
-
-        // Mengambil data hasil query
         $user = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
 
-        // Verifikasi password jika data ditemukan
-        if ($user) {
-            // Cek apakah password sesuai dengan yang disimpan di database
-            if (password_verify($password, $user['password'])) {
-                return $user; // Kembalikan data user beserta role-nya
-            } else {
-                return null; // Password tidak cocok
-            }
-        }
-
-        return null; // Pengguna tidak ditemukan
+        return $user ? $user : null; // Mengembalikan data user jika ditemukan, jika tidak null
     }
 }

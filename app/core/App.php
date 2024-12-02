@@ -1,45 +1,46 @@
 <?php
+// app/core/App.php
+
 class App
 {
     protected $controller = 'AuthController'; // Default controller
-    protected $method = 'index'; // Default method
-    protected $params = []; // URL parameters
+    protected $method = 'login'; // Default method
+    protected $params = [];
 
     public function __construct()
     {
-        // Parsing URL
+        session_start();
         $url = $this->parseUrl();
 
-        // Set Controller
-        if (file_exists('../app/controllers/' . $url[0] . '.php')) {
-            $this->controller = $url[0];
+        // Cek apakah ada elemen di dalam URL, jika tidak set controller dan method default
+        if (!empty($url) && file_exists(__DIR__ . '/../controllers/' . ucfirst($url[0]) . '.php')) {
+            $this->controller = ucfirst($url[0]); // Pastikan nama controller dengan huruf besar pertama
             unset($url[0]);
+        } else {
+            $this->controller = 'AuthController'; // Default controller
         }
+        require_once __DIR__ . '/../controllers/' . $this->controller . '.php';
+        $controllerObj = new $this->controller();
 
-        // Memuat Controller
-        require_once '../app/controllers/' . $this->controller . '.php';
-        $this->controller = new $this->controller;
-
-        // Set Method
-        if (isset($url[1]) && method_exists($this->controller, $url[1])) {
+        // Cek apakah method yang dipanggil ada di dalam controller
+        if (isset($url[1]) && method_exists($controllerObj, $url[1])) {
             $this->method = $url[1];
             unset($url[1]);
         }
 
-        // Set Parameters
-        $this->params = $url ? array_values($url) : [];
+        // Set parameters jika ada
+        $this->params = !empty($url) ? array_values($url) : [];
 
-        // Eksekusi Controller dan Method
-        call_user_func_array([$this->controller, $this->method], $this->params);
+        // Eksekusi method controller dengan parameter jika ada
+        call_user_func_array([$controllerObj, $this->method], $this->params);
     }
 
-    // Fungsi untuk memparse URL
+    // Fungsi untuk memparsing URL
     public function parseUrl()
     {
-        // Mengambil dan memecah URL dari parameter 'url' dalam GET
         if (isset($_GET['url'])) {
+            // Menghapus karakter yang tidak diinginkan pada URL
             return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
         }
-        return ['AuthController']; // Default controller jika URL tidak ada
     }
 }

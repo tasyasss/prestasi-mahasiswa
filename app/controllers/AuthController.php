@@ -1,44 +1,42 @@
 <?php
-class AuthController
+// app/controllers/AuthController.php
+
+class AuthController extends Controller
 {
-    public function index()
-    {
-        // Tampilkan halaman login sebagai halaman default
-        include '../app/views/auth/login.php';
-    }
+
     public function login()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Cek jika form login sudah disubmit
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = $_POST['username'];
+            $password = $_POST['password'];
+
+            // Menggunakan model UserModel untuk cek user berdasarkan username
             $userModel = new UserModel();
-            $user = $userModel->login($_POST['username'], $_POST['password']);
+            $user = $userModel->getUserByUsername($username);
 
-            if ($user) {
-                session_start();
-                $_SESSION['user'] = $user['username'];
-                $_SESSION['role'] = $user['role_name'];  // Menyimpan role di session
-
-                // Redirect berdasarkan role
-                if ($_SESSION['role'] === 'Admin') {
-                    header('Location: ' . BASE_URL . 'app/views/admin/dashboard.php');
-                } elseif ($_SESSION['role'] === 'Mahasiswa') {
-                    header('Location: ' . BASE_URL . 'app/views/user/dashboard');
-                } else {
-                    echo "Invalid role.";
-                }
-                exit();
+            // Validasi password dan login
+            if ($user && password_verify($password, $user['password'])) {
+                // Jika password cocok, simpan session dan arahkan ke dashboard
+                $_SESSION['user'] = $user;
+                $_SESSION['role'] = $user['role_name'];
+                header("Location: " . BASE_URL . "/dashboard");
+                exit;
             } else {
-                echo "Invalid username or password.";
+                // Jika username atau password salah
+                $this->view('auth/login', ['error' => 'Username atau Password salah']);
             }
         } else {
-            include '../app/views/auth/login.php';
+            // Jika form belum disubmit, tampilkan halaman login
+            $this->view('auth/login');
         }
     }
 
     public function logout()
     {
-        session_start();
+        // Hapus session untuk logout
         session_destroy();
-        header('Location: ' . BASE_URL . 'auth/login');
-        exit();
+        header("Location: " . BASE_URL . "/login");
+        exit;
     }
 }
